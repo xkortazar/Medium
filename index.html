@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filotaxis LED</title>
+  <meta name="description" content="Explicación interactiva de la filotaxis y simulador de una pantalla LED que reacciona al sonido." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero-text">
+      <p class="eyebrow">Matemáticas · Naturaleza · Luz · Sonido</p>
+      <h1>Filotaxis</h1>
+      <p class="lede">Cómo un único ángulo produce las espirales del girasol, y cómo convertirlas en una pantalla LED que baila con la música.</p>
+      <a class="cta" href="#display">Ir al simulador ↓</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. Qué es -->
+    <section class="section" id="que-es">
+      <h2><span class="num">01</span> Un patrón que se repite en toda la naturaleza</h2>
+      <p>
+        La <strong>filotaxis</strong> (del griego <em>phyllon</em>, hoja, y <em>taxis</em>, orden) es la forma en que las plantas
+        colocan hojas, pétalos, semillas o escamas alrededor de un tallo. Mira el centro de un girasol, una piña,
+        una alcachofa o una suculenta: verás dos familias de espirales que giran en sentidos opuestos.
+      </p>
+      <p>
+        Si cuentas esas espirales casi siempre salen dos números consecutivos de la sucesión de Fibonacci:
+        <code>8 y 13</code>, <code>21 y 34</code>, <code>34 y 55</code>… No es casualidad. Cada nueva semilla
+        aparece girada un ángulo fijo respecto a la anterior, y ese ángulo es el que mejor reparte el espacio.
+      </p>
+    </section>
+
+    <!-- 2. Modelo de Vogel -->
+    <section class="section" id="vogel">
+      <h2><span class="num">02</span> Dos fórmulas bastan</h2>
+      <p>
+        En 1979 Helmut Vogel propuso un modelo muy sencillo. La semilla número <var>n</var> se coloca en coordenadas polares:
+      </p>
+      <div class="formula">
+        <div><var>θ</var><sub>n</sub> = <var>n</var> · <var>α</var></div>
+        <div><var>r</var><sub>n</sub> = <var>c</var> · √<var>n</var></div>
+      </div>
+      <p>
+        El ángulo crece de forma constante y el radio crece con la raíz cuadrada, de modo que cada semilla ocupa
+        aproximadamente la misma superficie. Todo depende del <strong>ángulo de divergencia</strong> <var>α</var>.
+        Mueve el control y observa qué pasa cuando te alejas, aunque sea una décima de grado, de <strong>137,508°</strong>.
+      </p>
+
+      <div class="lab">
+        <canvas id="vogel-canvas" width="600" height="600"></canvas>
+        <div class="controls">
+          <label>
+            <span>Ángulo α <output id="angle-out">137.508°</output></span>
+            <input type="range" id="angle" min="130" max="145" step="0.001" value="137.508" />
+          </label>
+          <div class="presets">
+            <button data-angle="137.508" class="active">Áureo 137,508°</button>
+            <button data-angle="137.3">137,3°</button>
+            <button data-angle="137.6">137,6°</button>
+            <button data-angle="144">144° (2/5)</button>
+            <button data-angle="135">135° (3/8)</button>
+          </div>
+          <label>
+            <span>Semillas <output id="count-out">800</output></span>
+            <input type="range" id="count" min="10" max="3000" step="10" value="800" />
+          </label>
+          <label>
+            <span>Tamaño de punto <output id="dot-out">1.0</output></span>
+            <input type="range" id="dot" min="0.3" max="2" step="0.05" value="1" />
+          </label>
+          <label class="check">
+            <input type="checkbox" id="grow" /> Animar el crecimiento
+          </label>
+          <p class="hint" id="angle-hint"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Ángulo áureo -->
+    <section class="section" id="aureo">
+      <h2><span class="num">03</span> ¿Por qué 137,508°?</h2>
+      <p>
+        Es el <strong>ángulo áureo</strong>: dividir la circunferencia en dos arcos cuya razón es el número áureo
+        φ = (1 + √5) / 2 ≈ 1,618. El arco pequeño mide 360° · (1 − 1/φ) ≈ 137,508°.
+      </p>
+      <p>
+        Si el ángulo fuese una fracción sencilla de la vuelta (por ejemplo 2/5 de 360° = 144°), las semillas
+        se alinearían en unos pocos radios rectos y dejarían huecos enormes entre ellos. φ es el número “más irracional”
+        que existe: su desarrollo en fracción continua es <code>[1; 1, 1, 1, …]</code>, así que las fracciones
+        lo aproximan peor que a cualquier otro número. Con él, ninguna semilla cae exactamente encima de otra, nunca.
+      </p>
+      <div class="lab small">
+        <canvas id="fraction-canvas" width="600" height="220"></canvas>
+        <div class="controls">
+          <p>Las mejores aproximaciones de 1/φ son cocientes de Fibonacci consecutivos. Cada una genera un número de
+          radios igual a su denominador, y esos son justo los números de espirales que vemos:</p>
+          <div class="table-wrap"><table class="fib" id="fib-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Parastiquias -->
+    <section class="section" id="espirales">
+      <h2><span class="num">04</span> Las espirales que no dibujó nadie</h2>
+      <p>
+        Nadie “traza” las espirales: aparecen porque los vecinos más cercanos de cada semilla están a
+        distancias de índice que son números de Fibonacci. Si unes cada semilla <var>n</var> con la <var>n + k</var>,
+        verás <var>k</var> espirales. Los botánicos las llaman <strong>parastiquias</strong>.
+      </p>
+      <div class="lab">
+        <canvas id="spiral-canvas" width="600" height="600"></canvas>
+        <div class="controls">
+          <p>Colorea las semillas según <var>n</var> mod <var>k</var>:</p>
+          <div class="presets" id="k-buttons"></div>
+          <label class="check"><input type="checkbox" id="show-lines" checked /> Unir las semillas de cada familia</label>
+          <p class="hint" id="k-hint"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. De las semillas a los LED -->
+    <section class="section" id="leds">
+      <h2><span class="num">05</span> De semillas a píxeles</h2>
+      <p>
+        Una pantalla LED normal es una rejilla cuadrada. Pero nada obliga a que lo sea: si colocamos cada LED
+        donde el modelo de Vogel pondría una semilla, obtenemos una pantalla redonda, con densidad uniforme y
+        un aspecto orgánico. Cada LED tiene tres “direcciones” naturales para dibujar:
+      </p>
+      <ul class="cards">
+        <li><strong>Índice <var>n</var></strong><span>El orden de cableado. Recorrerlo es barrer desde el centro hacia fuera.</span></li>
+        <li><strong>Radio <var>r</var></strong><span>Anillos concéntricos: ideal para ondas que se expanden.</span></li>
+        <li><strong>Espiral <var>n</var> mod <var>k</var></strong><span>Brazos de Fibonacci que pueden girar en un sentido u otro.</span></li>
+      </ul>
+      <p>
+        El simulador de abajo usa exactamente estas tres coordenadas. Los LED direccionables (WS2812B, SK6812…)
+        se encadenan en serie, así que el índice del modelo coincide directamente con el índice en la tira:
+        el firmware solo necesita una tabla precalculada con <var>r</var> y <var>θ</var> de cada uno.
+      </p>
+    </section>
+
+    <!-- 6. Simulador -->
+    <section class="section" id="display">
+      <h2><span class="num">06</span> Simulador audio-reactivo</h2>
+      <p>
+        El sonido se descompone con una FFT en bandas de frecuencia. Los graves se asignan al centro y los agudos a
+        los bordes (o a cada brazo de la espiral), y un detector de golpes dispara pulsos en cada bombo.
+        Usa el micrófono, sube una canción o escucha el ritmo de demostración.
+      </p>
+
+      <div class="display-wrap">
+        <div class="display-stage">
+          <canvas id="led-canvas" width="720" height="720"></canvas>
+          <div class="meter"><canvas id="spectrum" width="720" height="80"></canvas></div>
+        </div>
+        <div class="controls">
+          <fieldset>
+            <legend>Fuente de audio</legend>
+            <div class="presets">
+              <button id="src-demo">▶ Ritmo demo</button>
+              <button id="src-mic">🎤 Micrófono</button>
+              <label class="button file">📁 Archivo<input type="file" id="src-file" accept="audio/*" hidden /></label>
+              <button id="src-stop">■ Parar</button>
+            </div>
+            <p class="hint" id="audio-status">Sin audio: modo reposo.</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Modo</legend>
+            <div class="presets" id="modes">
+              <button data-mode="radial" class="active">Anillos</button>
+              <button data-mode="arms">Brazos</button>
+              <button data-mode="bloom">Floración</button>
+              <button data-mode="spin">Remolino</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Paleta</legend>
+            <div class="presets" id="palettes">
+              <button data-palette="sunflower" class="active">Girasol</button>
+              <button data-palette="ocean">Océano</button>
+              <button data-palette="neon">Neón</button>
+              <button data-palette="rainbow">Arcoíris</button>
+            </div>
+          </fieldset>
+
+          <label>
+            <span>LED <output id="led-count-out">400</output></span>
+            <input type="range" id="led-count" min="50" max="1200" step="10" value="400" />
+          </label>
+          <label>
+            <span>Sensibilidad <output id="gain-out">1.0</output></span>
+            <input type="range" id="gain" min="0.2" max="3" step="0.05" value="1" />
+          </label>
+          <label>
+            <span>Brazos (k) <output id="arms-out">21</output></span>
+            <input type="range" id="arms" min="0" max="5" step="1" value="3" />
+          </label>
+          <label class="check"><input type="checkbox" id="diffuser" checked /> Difusor (brillo suave)</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Construcción -->
+    <section class="section" id="construccion">
+      <h2><span class="num">07</span> Si quieres construir uno</h2>
+      <ol class="steps">
+        <li><strong>Calcula las posiciones.</strong> Con <var>r</var> = <var>c</var>√<var>n</var> y <var>θ</var> = <var>n</var>·137,508°, elige <var>c</var> para que la distancia mínima entre LED sea mayor que el tamaño de cada uno. Exporta las coordenadas como plantilla para cortar o taladrar la placa (láser, CNC o impresión 3D).</li>
+        <li><strong>Cablea en orden.</strong> Sigue el índice <var>n</var> al soldar: así el LED 0 es el centro y la tira física coincide con el modelo matemático.</li>
+        <li><strong>Alimentación.</strong> Cada LED RGB a pleno blanco consume ~60 mA. 400 LED pueden pedir 24 A a 5 V: inyecta corriente en varios puntos y limita el brillo por software.</li>
+        <li><strong>Audio.</strong> Un micrófono I²S (p. ej. INMP441) y un microcontrolador con potencia para la FFT (ESP32 o similar) bastan para 30–60 fps.</li>
+        <li><strong>Difusor.</strong> Una lámina de acrílico opal o papel vegetal a pocos milímetros convierte los puntos en manchas de luz que se funden.</li>
+      </ol>
+      <div class="lab small">
+        <div class="controls wide">
+          <p>Genera la tabla de coordenadas para tu firmware o para la plantilla de taladrado:</p>
+          <div class="row">
+            <label><span>LED</span><input type="number" id="exp-n" value="256" min="1" max="5000" /></label>
+            <label><span>Separación c (mm)</span><input type="number" id="exp-c" value="10" min="1" max="100" step="0.5" /></label>
+            <button id="exp-csv">Descargar CSV</button>
+            <button id="exp-svg">Descargar SVG</button>
+            <button id="exp-c-code">Descargar tabla C</button>
+          </div>
+          <p class="hint" id="exp-info"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Inspirado en <a href="https://jagi.studio/posts/phyllotaxis/" target="_blank" rel="noopener">“Phyllotaxis: An audio-reactive LED display”</a> de Jagi Natarajan. Textos, código y simulación originales.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
